@@ -1,0 +1,17 @@
+{
+  "name": "cv-notion",
+  "version": "1.0.0",
+  "description": "notion connection for blog",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index"
+  },
+  "author": "EP",
+  "license": "ISC",
+  "dependencies": {
+    "@notionhq/client": "^0.4.13",
+    "dotenv": "^14.3.2",
+    "express": "^4.17.2"
+  }
+}
