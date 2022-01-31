@@ -1,12 +1,14 @@
 const express = require('express');
-const dotenv = require('dotenv').config();
+//const dotenv = require('dotenv').config();
 const { Client } = require('@notionhq/client');
 
-const PORT = process.env.PORT || '8000';
+if (process.env.NODE_ENV !== 'PROD') {
+    require('dotenv').config();
+}
+
+const PORT = process.env.PORT || 8000;
 
 const app = express();
-
-app.listen(PORT, console.log(`SERVER STARTED ON PORT ${PORT}!`));
 
 app.get('/entries', async(req, res) => {
     try {
@@ -25,15 +27,8 @@ const notion = new Client({
     auth: process.env.NOTION_TOKEN
 });
 
-//Deprecated
-/* const listDatabases = async() => {
-    const res = await notion.databases.list();
-    console.log(res);
-}
-listDatabases(); */
-
+//Connnect and query DB table
 const database_id = process.env.NOTION_DATABASE_ID;
-
 const getBytesPages = async() => {
     const { results }  = await notion.databases.query({
         database_id: database_id,
@@ -63,8 +58,13 @@ const getBytesPages = async() => {
     });
     return entries;
 }
-/* 
-(async () => {
+
+/* (async () => {
     const house_bytes = await getBytesPages();
     console.log('posts', house_bytes);
 })(); */
+
+
+app.listen(PORT);
+console.log(`API is listening on: ${PORT}`);
+console.log(`The node ENV is: ${process.env.NODE_ENV}`);
