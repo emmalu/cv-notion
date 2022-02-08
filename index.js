@@ -1,69 +1,60 @@
-const express = require('express');
+const express = require("express");
 //const dotenv = require('dotenv').config();
-const { Client } = require('@notionhq/client');
+const Posts = require("./routes/posts");
+const Email = require("./routes/email");
 
-if (process.env.NODE_ENV !== 'PROD') {
-    require('dotenv').config();
+if (process.env.NODE_ENV !== "PROD") {
+  process.env.NODE_ENV = "DEV";
+  require("dotenv").config();
 }
+
+const getPostsFromDatabase = Posts.queryDatabase;
 
 const PORT = process.env.PORT || 8000;
 
 const app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-app.get('/entries', async(req, res) => {
-    try {
-        const house_bytes = await getBytesPages();
-        console.log('entries', house_bytes);
-        const url = `https://emmalu.notion.site/${(house_bytes[0].title).replace(/ /g, '-')}-${house_bytes[0].id}`;
-        console.log('url', url);
-        res.json(house_bytes);
-    } catch (err) {
-        res.status(err).send("There's been an error querying the data. Please try again later.");
-    }
+app.get("/", async (req, res) => {
+  res.send("Hello World!");
 });
 
-//Init client
-const notion = new Client({
-    auth: process.env.NOTION_TOKEN
+app.get("/posts", async (req, res) => {
+  try {
+    const posts = await getPostsFromDatabase();
+    console.log("posts", posts);
+    const url = `https://emmalu.notion.site/${posts[0].title.replace(
+      / /g,
+      "-"
+    )}-${posts[0].id}`;
+    console.log("url", url);
+    res.json(posts);
+  } catch (err) {
+    res
+      .status(err)
+      .send("There's been an error querying the data. Please try again later.");
+  }
 });
 
-//Connnect and query DB table
-const database_id = process.env.NOTION_DATABASE_ID;
-const getBytesPages = async() => {
-    const { results }  = await notion.databases.query({
-        database_id: database_id,
-        filter: {
-            property: 'Status',
-            select: {
-              equals: 'Published'
-            }
-        },
-        sorts: [
-            {
-                property: 'Published',
-                direction: 'descending'
-            }
-        ]
+app.post("/email", async (req, res) => {
+  try {
+    const email = req.body.email;
+    const response = await Email.addToDatabase(email);
+    res.send({
+      statusCode: 200,
+      message: response,
+      body: "Email Added Successfully!",
     });
-    const entries = results.map((page) => {
-        //console.log('page', page);
-        return {
-            id: page.id,
-            title: page.properties.Name.title[0].plain_text,
-            tags: page.properties.Tags.multi_select.map( t=>{return t.name}),
-            slug: page.properties.Slug.rich_text[0].plain_text,
-            published: page.properties.Published.date.start,
-            last_edited: page.last_edited_time
-        }; 
-    });
-    return entries;
-}
-
-/* (async () => {
-    const house_bytes = await getBytesPages();
-    console.log('posts', house_bytes);
-})(); */
-
+    res.redirect("/");
+    res.end();
+  } catch (err) {
+    return {
+      statusCode: 400,
+      body: err.toString(),
+    };
+  }
+});
 
 app.listen(PORT);
 console.log(`API is listening on: ${PORT}`);
