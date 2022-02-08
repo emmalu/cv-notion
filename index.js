@@ -2,13 +2,12 @@ const express = require("express");
 //const dotenv = require('dotenv').config();
 const Posts = require("./routes/posts");
 const Email = require("./routes/email");
+const Lists = require("./routes/lists");
 
 if (process.env.NODE_ENV !== "PROD") {
   process.env.NODE_ENV = "DEV";
   require("dotenv").config();
 }
-
-const getPostsFromDatabase = Posts.queryDatabase;
 
 const PORT = process.env.PORT || 8000;
 
@@ -20,15 +19,19 @@ app.get("/", async (req, res) => {
   res.send("Hello World!");
 });
 
+app.get("/lists", async (req, res) => {
+  try {
+    const posts = await Lists.queryDatabase();
+    res.json(posts);
+  } catch (err) {
+    res
+      .status(err)
+      .send("There's been an error querying the data. Please try again later.");
+  }
+});
 app.get("/posts", async (req, res) => {
   try {
-    const posts = await getPostsFromDatabase();
-    console.log("posts", posts);
-    const url = `https://emmalu.notion.site/${posts[0].title.replace(
-      / /g,
-      "-"
-    )}-${posts[0].id}`;
-    console.log("url", url);
+    const posts = await Posts.queryDatabase();
     res.json(posts);
   } catch (err) {
     res
