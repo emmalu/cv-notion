@@ -11,6 +11,17 @@ if (process.env.NODE_ENV !== "PROD") {
 
 const PORT = process.env.PORT || 8000;
 
+var whitelist = ["https://coastal-vantage.com"];
+var corsOptions = {
+  origin: function (origin, callback) {
+    if (whitelist.indexOf(origin) !== -1 || process.env.NODE_ENV === "DEV") {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+};
+
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -19,7 +30,7 @@ app.get("/", async (req, res) => {
   res.send("Hello World!");
 });
 
-app.get("/lists", cors(), async (req, res) => {
+app.get("/lists", cors(corsOptions), async (req, res) => {
   try {
     const posts = await Lists.queryDatabase();
     res.json(posts);
@@ -29,7 +40,7 @@ app.get("/lists", cors(), async (req, res) => {
       .send("There's been an error querying the data. Please try again later.");
   }
 });
-app.get("/posts", cors(), async (req, res) => {
+app.get("/posts", cors(corsOptions), async (req, res) => {
   try {
     const posts = await Posts.queryDatabase();
     res.json(posts);
