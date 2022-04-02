@@ -1,5 +1,5 @@
 const express = require("express");
-//const dotenv = require('dotenv').config();
+const cors = require("cors");
 const Posts = require("./routes/posts");
 const Email = require("./routes/email");
 const Lists = require("./routes/lists");
@@ -19,7 +19,7 @@ app.get("/", async (req, res) => {
   res.send("Hello World!");
 });
 
-app.get("/lists", async (req, res) => {
+app.get("/lists", cors(), async (req, res) => {
   try {
     const posts = await Lists.queryDatabase();
     res.json(posts);
@@ -29,7 +29,7 @@ app.get("/lists", async (req, res) => {
       .send("There's been an error querying the data. Please try again later.");
   }
 });
-app.get("/posts", async (req, res) => {
+app.get("/posts", cors(), async (req, res) => {
   try {
     const posts = await Posts.queryDatabase();
     res.json(posts);
