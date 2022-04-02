@@ -11,7 +11,7 @@ if (process.env.NODE_ENV !== "PROD") {
 
 const PORT = process.env.PORT || 8000;
 
-var whitelist = ["https://coastal-vantage.com"];
+var whitelist = ["https://localhost:3000", "https://coastal-vantage.com"];
 var corsOptions = {
   origin: function (origin, callback) {
     if (whitelist.indexOf(origin) !== -1 || process.env.NODE_ENV === "DEV") {
